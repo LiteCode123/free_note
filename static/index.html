@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>free_note · 我的记录</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<!-- 解锁 / 首次设置 -->
+<div id="lock-screen" class="lock-screen">
+  <div class="lock-card">
+    <div class="lock-mark" aria-hidden="true">◈</div>
+    <h1 class="lock-title">free_note</h1>
+    <p id="lock-hint" class="lock-hint">输入主密码解锁你的记录</p>
+    <form id="lock-form" autocomplete="off">
+      <input type="password" id="master-password" class="input lock-input" placeholder="主密码" autocomplete="current-password" autofocus>
+      <button type="submit" id="lock-submit" class="btn btn-primary btn-lg btn-block">解锁</button>
+    </form>
+    <p id="lock-error" class="form-error hidden" role="alert"></p>
+    <div id="migrate-wrap" class="migrate-wrap hidden">
+      <button type="button" id="migrate-btn" class="btn btn-ghost btn-sm">去掉密码保护（之后自动进入）</button>
+    </div>
+  </div>
+  <p class="lock-foot">本地加密 · 数据只保存在你的电脑上</p>
+</div>
+
+<!-- 应用主体 -->
+<div id="app-screen" class="app hidden">
+
+  <!-- 侧边栏 -->
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">◈</span>
+      <span class="brand-name">free_note</span>
+    </div>
+
+    <button id="btn-add" class="btn btn-primary btn-new">
+      <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      <span>新建记录</span>
+    </button>
+
+    <nav class="nav" aria-label="分类">
+      <div class="nav-label">分类</div>
+      <button class="nav-item active" data-cat="__all__">
+        <span class="nav-text">全部记录</span>
+        <span class="nav-count" id="count-all">0</span>
+      </button>
+      <div id="category-list"></div>
+    </nav>
+
+    <div class="sidebar-foot">
+      <button id="btn-lock" class="btn btn-ghost btn-block">
+        <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><rect x="3" y="7" width="10" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M5 7V5a3 3 0 0 1 6 0v2" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+        <span>锁定</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- 主内容 -->
+  <main class="main">
+    <header class="main-head">
+      <div class="search">
+        <svg class="search-icon" viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><circle cx="7" cy="7" r="4.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M10.5 10.5 14 14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <input type="text" id="search" class="search-input" placeholder="搜索标题、账号、内容…" autocomplete="off">
+        <kbd class="search-kbd">/</kbd>
+      </div>
+    </header>
+
+    <div class="list-head">
+      <h1 id="content-title">全部记录</h1>
+      <span id="content-count" class="list-count"></span>
+    </div>
+
+    <div id="record-list" class="record-list" role="list"></div>
+
+    <div id="empty-state" class="empty hidden">
+      <div class="empty-mark" aria-hidden="true">✦</div>
+      <p class="empty-title">这里还很空</p>
+      <p class="empty-sub">点左上角「新建记录」，或按 <kbd>N</kbd>，存下你的第一条账号、密钥或指南。</p>
+    </div>
+  </main>
+
+  <!-- 详情抽屉 -->
+  <aside id="drawer" class="drawer hidden" aria-label="记录详情">
+    <div class="drawer-head">
+      <div class="drawer-title-wrap">
+        <h2 id="drawer-title" class="drawer-title"></h2>
+        <span id="drawer-category" class="chip"></span>
+      </div>
+      <button class="icon-btn" id="drawer-close" aria-label="关闭">
+        <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="drawer-body">
+      <div id="drawer-fields" class="drawer-fields"></div>
+      <div id="drawer-meta" class="drawer-meta"></div>
+    </div>
+    <div class="drawer-foot">
+      <button id="btn-delete" class="btn btn-danger-ghost">删除</button>
+      <span class="spacer"></span>
+      <button id="btn-edit" class="btn btn-primary">编辑</button>
+    </div>
+  </aside>
+  <div id="drawer-backdrop" class="drawer-backdrop hidden"></div>
+
+</div>
+
+<!-- 新建 / 编辑 -->
+<dialog id="form-modal" class="modal">
+  <form id="form" method="dialog" autocomplete="off">
+    <div class="modal-head">
+      <h2 id="form-title" class="modal-title">新建记录</h2>
+      <button type="button" class="icon-btn" id="form-close" aria-label="关闭">
+        <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <label class="field-label" for="form-category">分类</label>
+        <input id="form-category" class="input" list="category-suggestions" placeholder="账号密码 / API密钥 / 操作指南">
+        <datalist id="category-suggestions"></datalist>
+      </div>
+      <div class="field">
+        <label class="field-label" for="form-title-input">标题</label>
+        <input id="form-title-input" class="input" placeholder="给这条记录起个名字">
+      </div>
+      <div class="field">
+        <label class="field-label">字段</label>
+        <div id="field-rows"></div>
+        <button type="button" id="btn-add-field" class="btn btn-ghost btn-sm">
+          <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          添加字段
+        </button>
+      </div>
+      <div class="field">
+        <label class="field-label" for="form-notes">备注</label>
+        <textarea id="form-notes" class="input" rows="3" placeholder="补充说明（可选）"></textarea>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <span id="form-error" class="form-error hidden" role="alert"></span>
+      <span class="spacer"></span>
+      <button type="button" class="btn btn-ghost" id="form-cancel">取消</button>
+      <button type="submit" class="btn btn-primary" id="form-save">保存</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- 删除确认 -->
+<dialog id="confirm-modal" class="modal modal-sm">
+  <div class="modal-head">
+    <h2 class="modal-title">删除这条记录？</h2>
+  </div>
+  <div class="modal-body">
+    <p id="confirm-text" class="confirm-text">删除后无法恢复。</p>
+  </div>
+  <div class="modal-foot">
+    <span class="spacer"></span>
+    <button class="btn btn-ghost" id="confirm-cancel">取消</button>
+    <button class="btn btn-danger" id="confirm-yes">删除</button>
+  </div>
+</dialog>
+
+<div id="toast" class="toast hidden" role="status"></div>
+<script src="/static/app.js"></script>
+</body>
+</html>

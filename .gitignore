@@ -1,0 +1,49 @@
+# Local notes, SQLite journals and database backups
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
+*.sqlite-*
+*.sqlite3-*
+*.db.*
+*.sqlite.*
+*.sqlite3.*
+data/
+backups/
+private/
+exports/
+*.bak
+*.backup
+
+# Credentials and local configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials*.json
+secrets*.json
+
+# Python and build output
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+build/
+dist/
+*.egg-info/
+*.log
+
+# Editors, local tools and operating systems
+.idea/
+.vscode/
+.codex/
+.agents/
+.aws/
+Thumbs.db
+Desktop.ini
+.DS_Store
